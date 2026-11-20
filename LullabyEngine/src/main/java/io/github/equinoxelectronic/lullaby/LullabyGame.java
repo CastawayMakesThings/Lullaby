@@ -14,7 +14,7 @@ import java.io.IOException;
 
 public class LullabyGame {
     //Program identifiers
-    public static final String VERSION = "v0.0.1-ALPHA";
+    public static final String VERSION = "v0.0.2-ALPHA";
     public static final String NAME = "Lullaby";
 
     public JFrame window = null;

@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "io.github.equinoxelectronic.lullaby"
-version = "v0.0.1-ALPHA"
+version = "v0.0.2-ALPHA"
 
 java {
     toolchain {
