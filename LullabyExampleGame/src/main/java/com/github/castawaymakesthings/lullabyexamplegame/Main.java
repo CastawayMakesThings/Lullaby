@@ -19,6 +19,7 @@ public class Main {
         story.scene("intro")
                 .title("Welcome to a game made in Lullaby!")
                 .text("This is a simple example of a game made in Lullaby.")
+                .image("Lullaby.png")
                 .choice("End the game", "ending")
                 .choice(
                         Choice.make("See more", "p2")

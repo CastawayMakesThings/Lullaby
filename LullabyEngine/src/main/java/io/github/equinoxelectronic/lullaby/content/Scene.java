@@ -2,6 +2,10 @@ package io.github.equinoxelectronic.lullaby.content;
 
 import io.github.equinoxelectronic.lullaby.gamedata.GameState;
 
+import javax.swing.*;
+import java.awt.*;
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -16,6 +20,7 @@ public class Scene {
     public List<Consumer<GameState>> enterActions = new ArrayList<>();
     public List<Choice> choices = new ArrayList<>();
     public List<Field> fields = new ArrayList<>();
+    public List<SceneElement> elements = new ArrayList<>();
     public boolean isEnding = false;
 
     public Scene(String id) {
@@ -30,64 +35,258 @@ public class Scene {
 
     //Add a basic text block
     public Scene text(String text) {
-        this.textGenerators.add(state -> text);
+        Function<GameState, String> gen = state -> text;
+        this.textGenerators.add(gen);
+        this.elements.add(new SceneTextElement(gen));
         return this;
     }
 
     //Add a fancy text block
     public Scene text(Function<GameState, String> textGenerator) {
         this.textGenerators.add(textGenerator);
+        this.elements.add(new SceneTextElement(textGenerator));
         return this;
     }
 
     //Add a choice
     public Scene choice(Choice choice) {
         this.choices.add(choice);
+        this.elements.add(new SceneChoiceElement(choice));
         return this;
     }
 
     public Scene choice(String label, String targetSceneId) {
-        this.choices.add(new Choice(label, targetSceneId));
-        return this;
+        return choice(new Choice(label, targetSceneId));
     }
 
     public Scene choice(String label, String targetSceneId, Consumer<GameState> action) {
         Choice c = new Choice(label, targetSceneId);
         c.onSelect(action);
-        this.choices.add(c);
-        return this;
+        return choice(c);
     }
 
     public Scene choice(Function<GameState, String> dynamicLabel, String targetSceneId) {
-        this.choices.add(new Choice(dynamicLabel, targetSceneId));
-        return this;
+        return choice(new Choice(dynamicLabel, targetSceneId));
     }
 
     //Add a field
     public Scene field(Field field) {
         this.fields.add(field);
+        this.elements.add(new SceneFieldElement(field));
         return this;
     }
 
     public Scene field(String placeholder, String targetSceneId) {
-        this.fields.add(new Field(placeholder, targetSceneId));
-        return this;
+        return field(new Field(placeholder, targetSceneId));
     }
 
     public Scene field(String placeholder, String targetSceneId, String boundVariableKey) {
-        this.fields.add(new Field(placeholder, targetSceneId, boundVariableKey));
+        return field(new Field(placeholder, targetSceneId, boundVariableKey));
+    }
+
+    //Add an image block
+    public Scene image(Object imageSource) {
+        this.elements.add(new SceneImageElement(imageSource));
         return this;
+    }
+
+    public Scene image(String path) {
+        return image((Object) path);
+    }
+
+    public Scene image(File file) {
+        return image((Object) file);
+    }
+
+    public Scene image(Image image) {
+        return image((Object) image);
+    }
+
+    public Scene image(ImageIcon icon) {
+        return image((Object) icon);
+    }
+
+    public Scene image(URL url) {
+        return image((Object) url);
+    }
+
+    public Scene image(Function<GameState, Object> dynamicImageSource) {
+        this.elements.add(new SceneImageElement(dynamicImageSource));
+        return this;
+    }
+
+    //Add a conditional image
+    public Scene imageIf(Predicate<GameState> condition, Object imageSource) {
+        this.elements.add(new SceneImageElement(condition, imageSource));
+        return this;
+    }
+
+    public Scene imageIf(Predicate<GameState> condition, String path) {
+        return imageIf(condition, (Object) path);
+    }
+
+    public Scene imageIf(Predicate<GameState> condition, File file) {
+        return imageIf(condition, (Object) file);
+    }
+
+    public Scene imageIf(Predicate<GameState> condition, Image image) {
+        return imageIf(condition, (Object) image);
+    }
+
+    public Scene imageIf(Predicate<GameState> condition, ImageIcon icon) {
+        return imageIf(condition, (Object) icon);
+    }
+
+    public Scene imageIf(Predicate<GameState> condition, URL url) {
+        return imageIf(condition, (Object) url);
+    }
+
+    public Scene imageIf(Predicate<GameState> condition, Function<GameState, Object> dynamicImageSource) {
+        this.elements.add(new SceneImageElement(condition, dynamicImageSource));
+        return this;
+    }
+
+    public Scene imageIfFlag(String flag, Object imageSource) {
+        return imageIf(state -> state.getFlag(flag), imageSource);
+    }
+
+    public Scene imageIfFlag(String flag, Function<GameState, Object> dynamicImageSource) {
+        return imageIf(state -> state.getFlag(flag), dynamicImageSource);
+    }
+
+    public Scene imageIfFlagFalse(String flag, Object imageSource) {
+        return imageIf(state -> !state.getFlag(flag), imageSource);
+    }
+
+    public Scene imageIfFlagFalse(String flag, Function<GameState, Object> dynamicImageSource) {
+        return imageIf(state -> !state.getFlag(flag), dynamicImageSource);
+    }
+
+    public Scene imageIfVarEquals(String varName, Object value, Object imageSource) {
+        return imageIf(state -> state.isVarEqual(varName, value), imageSource);
+    }
+
+    public Scene imageIfVarEquals(String varName, Object value, Function<GameState, Object> dynamicImageSource) {
+        return imageIf(state -> state.isVarEqual(varName, value), dynamicImageSource);
+    }
+
+    public Scene imageIfVarEquals(String varName, String value, Object imageSource) {
+        return imageIfVarEquals(varName, (Object) value, imageSource);
+    }
+
+    public Scene imageIfVarEquals(String varName, int value, Object imageSource) {
+        return imageIfVarEquals(varName, Integer.valueOf(value), imageSource);
+    }
+
+    public Scene imageIfVarEquals(String varName, boolean value, Object imageSource) {
+        return imageIfVarEquals(varName, Boolean.valueOf(value), imageSource);
+    }
+
+    public Scene imageIfVarEquals(String varName, double value, Object imageSource) {
+        return imageIfVarEquals(varName, Double.valueOf(value), imageSource);
+    }
+
+    public Scene imageIfVarEquals(String varName, long value, Object imageSource) {
+        return imageIfVarEquals(varName, Long.valueOf(value), imageSource);
+    }
+
+    public Scene imageIfVarNotEqual(String varName, Object value, Object imageSource) {
+        return imageIf(state -> !state.isVarEqual(varName, value), imageSource);
+    }
+
+    public Scene imageIfVarNotEqual(String varName, Object value, Function<GameState, Object> dynamicImageSource) {
+        return imageIf(state -> !state.isVarEqual(varName, value), dynamicImageSource);
+    }
+
+    public Scene imageIfVarNotEqual(String varName, String value, Object imageSource) {
+        return imageIfVarNotEqual(varName, (Object) value, imageSource);
+    }
+
+    public Scene imageIfVarNotEqual(String varName, int value, Object imageSource) {
+        return imageIfVarNotEqual(varName, Integer.valueOf(value), imageSource);
+    }
+
+    public Scene imageIfVarNotEqual(String varName, boolean value, Object imageSource) {
+        return imageIfVarNotEqual(varName, Boolean.valueOf(value), imageSource);
+    }
+
+    public Scene imageIfVarNotEqual(String varName, double value, Object imageSource) {
+        return imageIfVarNotEqual(varName, Double.valueOf(value), imageSource);
+    }
+
+    public Scene imageIfVarNotEqual(String varName, long value, Object imageSource) {
+        return imageIfVarNotEqual(varName, Long.valueOf(value), imageSource);
+    }
+
+    public Scene imageIfFirst(Object imageSource) {
+        return imageIf(state -> state.getSceneVisitCount(this.id) <= 1, imageSource);
+    }
+
+    public Scene imageIfFirst(Function<GameState, Object> dynamicImageSource) {
+        return imageIf(state -> state.getSceneVisitCount(this.id) <= 1, dynamicImageSource);
+    }
+
+    public Scene imageIfIteration(int iteration, Object imageSource) {
+        return imageIf(state -> state.getSceneVisitCount(this.id) == iteration, imageSource);
+    }
+
+    public Scene imageIfIteration(int iteration, Function<GameState, Object> dynamicImageSource) {
+        return imageIf(state -> state.getSceneVisitCount(this.id) == iteration, dynamicImageSource);
+    }
+
+    public Scene imageIfIteration(Predicate<Integer> iterationPredicate, Object imageSource) {
+        return imageIf(state -> iterationPredicate.test(state.getSceneVisitCount(this.id)), imageSource);
+    }
+
+    public Scene imageIfIteration(Predicate<Integer> iterationPredicate, Function<GameState, Object> dynamicImageSource) {
+        return imageIf(state -> iterationPredicate.test(state.getSceneVisitCount(this.id)), dynamicImageSource);
+    }
+
+    public Scene imageIfHasItem(String itemClassPointer, Object imageSource) {
+        return imageIfHasItem(itemClassPointer, 1, imageSource);
+    }
+
+    public Scene imageIfHasItem(String itemClassPointer, int quantity, Object imageSource) {
+        return imageIf(state -> state.hasItem(itemClassPointer, quantity), imageSource);
+    }
+
+    public Scene imageIfHasItem(String itemClassPointer, Function<GameState, Object> dynamicImageSource) {
+        return imageIfHasItem(itemClassPointer, 1, dynamicImageSource);
+    }
+
+    public Scene imageIfHasItem(String itemClassPointer, int quantity, Function<GameState, Object> dynamicImageSource) {
+        return imageIf(state -> state.hasItem(itemClassPointer, quantity), dynamicImageSource);
+    }
+
+    public Scene imageIfDoesntHaveItem(String itemClassPointer, Object imageSource) {
+        return imageIfDoesntHaveItem(itemClassPointer, 1, imageSource);
+    }
+
+    public Scene imageIfDoesntHaveItem(String itemClassPointer, int quantity, Object imageSource) {
+        return imageIf(state -> !state.hasItem(itemClassPointer, quantity), imageSource);
+    }
+
+    public Scene imageIfDoesntHaveItem(String itemClassPointer, Function<GameState, Object> dynamicImageSource) {
+        return imageIfDoesntHaveItem(itemClassPointer, 1, dynamicImageSource);
+    }
+
+    public Scene imageIfDoesntHaveItem(String itemClassPointer, int quantity, Function<GameState, Object> dynamicImageSource) {
+        return imageIf(state -> !state.hasItem(itemClassPointer, quantity), dynamicImageSource);
     }
 
     //Add a text block that only appears if a condition is met
     public Scene textIf(Predicate<GameState> condition, String text) {
-        this.textGenerators.add(state -> condition.test(state) ? text : "");
+        Function<GameState, String> gen = state -> condition.test(state) ? text : "";
+        this.textGenerators.add(gen);
+        this.elements.add(new SceneTextElement(gen));
         return this;
     }
 
     //Add a text block that only appears if a condition is met that allows for dynamic text generation
     public Scene textIf(Predicate<GameState> condition, Function<GameState, String> textGenerator) {
-        this.textGenerators.add(state -> condition.test(state) ? textGenerator.apply(state) : "");
+        Function<GameState, String> gen = state -> condition.test(state) ? textGenerator.apply(state) : "";
+        this.textGenerators.add(gen);
+        this.elements.add(new SceneTextElement(gen));
         return this;
     }
 

@@ -147,6 +147,14 @@ public class LullabyGame {
         }
     }
 
+    public void showInventoryDialog(Component parent) {
+        io.github.equinoxelectronic.lullaby.ui.InventoryDialog.show(parent != null ? parent : window, gameState, game != null ? game.gameData : null);
+    }
+
+    public void showInventoryDialog() {
+        showInventoryDialog(window);
+    }
+
     public void start() {
         FlatDarkLaf.setup();
 

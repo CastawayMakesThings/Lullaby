@@ -8,10 +8,14 @@ import io.github.equinoxelectronic.lullaby.gamedata.Stat;
 import io.github.equinoxelectronic.lullaby.ui.util.FontUtils;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-//The entire Side panel that displays Game Name, stats, time, and save, load, and quit buttons.
+//The entire Side panel that displays Game Name, stats, time, and inventory, save, load, and quit buttons.
 public class SideBox {
+    public static final Color SIDEBAR_BG = new Color(30, 31, 34);
+    public static final Color SIDEBAR_BORDER = new Color(45, 47, 52);
+
     public static JPanel getVBox(LullabyGame engine) {
         return getVBox(engine != null ? engine.gameState : null, engine != null && engine.game != null ? engine.game.gameData : null, engine);
     }
@@ -24,8 +28,11 @@ public class SideBox {
         //Create and configure the panel
         JPanel vbox = new JPanel();
         vbox.setLayout(new BoxLayout(vbox, BoxLayout.Y_AXIS));
-        vbox.setBorder(BorderFactory.createEmptyBorder(0, 20, 0, 20));
-        vbox.setBackground(new Color(67, 71, 67));
+        vbox.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 0, 1, SIDEBAR_BORDER),
+                new EmptyBorder(20, 20, 20, 20)
+        ));
+        vbox.setBackground(SIDEBAR_BG);
         populateVBox(vbox, gameState, gameData, engine);
         return vbox;
     }
@@ -40,38 +47,83 @@ public class SideBox {
 
     public static void populateVBox(JPanel vbox, GameState gameState, GameData gameData, LullabyGame engine) {
         vbox.removeAll();
+        vbox.setBackground(SIDEBAR_BG);
 
         //Title label
         if (gameData != null && gameData.gameName != null) {
             JLabel title = new JLabel(gameData.gameName);
-            title = FontUtils.applyDefaultFont(title, 18);
+            title.setFont(new Font("Segoe UI", Font.BOLD, 18));
+            title.setForeground(new Color(245, 245, 248));
+            title.setAlignmentX(Component.LEFT_ALIGNMENT);
             vbox.add(title);
-            vbox.add(Box.createRigidArea(new Dimension(0, 10)));
+            vbox.add(Box.createRigidArea(new Dimension(0, 12)));
+
+            JSeparator sep = new JSeparator();
+            sep.setForeground(new Color(50, 53, 58));
+            sep.setMaximumSize(new Dimension(Integer.MAX_VALUE, 1));
+            sep.setAlignmentX(Component.LEFT_ALIGNMENT);
+            vbox.add(sep);
+            vbox.add(Box.createRigidArea(new Dimension(0, 14)));
         }
 
         //Stats
-        if (gameState != null && gameState.getStats() != null) {
-            for (Stat stat : gameState.getStats().values()) {
-                JLabel statLabel = new JLabel(stat.getDisplayName() + ": " + stat.getValue());
-                statLabel = FontUtils.applyDefaultFont(statLabel);
-                vbox.add(statLabel);
-            }
-        }
+        if (gameState != null && gameState.getStats() != null && !gameState.getStats().isEmpty()) {
+            JLabel statsHeader = new JLabel("STATS");
+            statsHeader.setFont(new Font("Segoe UI", Font.BOLD, 11));
+            statsHeader.setForeground(new Color(135, 140, 150));
+            statsHeader.setAlignmentX(Component.LEFT_ALIGNMENT);
+            vbox.add(statsHeader);
+            vbox.add(Box.createRigidArea(new Dimension(0, 6)));
 
-        vbox.add(Box.createRigidArea(new Dimension(0, 10)));
+            for (Stat stat : gameState.getStats().values()) {
+                JPanel statRow = new JPanel(new BorderLayout());
+                statRow.setOpaque(false);
+                statRow.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+                statRow.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+                JLabel nameLabel = new JLabel(stat.getDisplayName());
+                nameLabel.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+                nameLabel.setForeground(new Color(205, 208, 215));
+
+                JLabel valueLabel = new JLabel(String.valueOf(stat.getValue()));
+                valueLabel.setFont(new Font("Segoe UI", Font.BOLD, 13));
+                valueLabel.setForeground(new Color(96, 165, 250));
+
+                statRow.add(nameLabel, BorderLayout.WEST);
+                statRow.add(valueLabel, BorderLayout.EAST);
+                vbox.add(statRow);
+                vbox.add(Box.createRigidArea(new Dimension(0, 4)));
+            }
+            vbox.add(Box.createRigidArea(new Dimension(0, 10)));
+        }
 
         //Display time if enabled
         if (gameData != null && gameData.shouldDisplayTime && gameState != null && gameState.getGameTime() != null) {
             JLabel t = new JLabel(gameState.getGameTime().getFormattedTime());
-            t = FontUtils.applyDefaultFont(t, 10);
+            t.setFont(new Font("Segoe UI", Font.PLAIN, 12));
+            t.setForeground(new Color(158, 163, 172));
+            t.setAlignmentX(Component.LEFT_ALIGNMENT);
             vbox.add(t);
+            vbox.add(Box.createRigidArea(new Dimension(0, 10)));
         }
 
         //Add the Buttons on the bottom panel
         JPanel bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
-        //Make the buttons go from bottom to top.
-        bottomPanel.add(Box.createVerticalGlue());
+        bottomPanel.setBackground(SIDEBAR_BG);
+        bottomPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+        //Make the buttons stay at the bottom.
+        vbox.add(Box.createVerticalGlue());
+
+        //Inventory button
+        bottomPanel.add(new SideBoxButton("Inventory", () -> {
+            LullabyGame targetEngine = engine != null ? engine : findEngine(gameState, gameData);
+            GameState targetState = targetEngine != null ? targetEngine.gameState : gameState;
+            GameData targetData = targetEngine != null && targetEngine.game != null ? targetEngine.game.gameData : gameData;
+            InventoryDialog.show(vbox, targetState, targetData);
+        }));
+        bottomPanel.add(Box.createRigidArea(new Dimension(0, 6)));
 
         //Save button
         bottomPanel.add(new SideBoxButton("Save", () -> {
@@ -80,7 +132,7 @@ public class SideBox {
                 targetEngine.saveWithDialog(vbox);
             }
         }));
-        bottomPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        bottomPanel.add(Box.createRigidArea(new Dimension(0, 6)));
 
         //Load button
         bottomPanel.add(new SideBoxButton("Load", () -> {
@@ -89,14 +141,11 @@ public class SideBox {
                 targetEngine.loadWithDialog(vbox);
             }
         }));
-        bottomPanel.add(Box.createRigidArea(new Dimension(0, 5)));
+        bottomPanel.add(Box.createRigidArea(new Dimension(0, 6)));
 
         //Quit button
         bottomPanel.add(new SideBoxButton("Quit", () -> System.exit(0)));
 
-        //Configure panel
-        bottomPanel.setBackground(new Color(67, 71, 67));
-        bottomPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
         vbox.add(bottomPanel);
 
         vbox.revalidate();
