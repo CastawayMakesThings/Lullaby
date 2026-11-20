@@ -10,6 +10,7 @@
           <set>
             <option value="$PROJECT_DIR$" />
             <option value="$PROJECT_DIR$/LullabyEngine" />
+            <option value="$PROJECT_DIR$/LullabyExampleGame" />
           </set>
         </option>
       </GradleProjectSettings>
