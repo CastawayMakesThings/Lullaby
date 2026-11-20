@@ -1,17 +1,32 @@
 plugins {
-    id("java")
+    `java-library`
+    `maven-publish`
 }
 
 group = "io.github.equinoxelectronic.lullaby"
 version = "v0.0.1-ALPHA"
 
+java {
+    toolchain {
+        languageVersion.set(JavaLanguageVersion.of(21))
+    }
+    withSourcesJar()
+    withJavadocJar()
+}
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenJava") {
+            from(components["java"])
+        }
+    }
+}
 
 dependencies {
-    testImplementation(platform("org.junit:junit-bom:6.0.0"))
+    testImplementation(platform("org.junit:junit-bom:5.10.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
-    implementation("com.formdev:flatlaf:3.5.4")
-    implementation("com.github.CastawayMakesThings:Lullaby:v1.0.1-ALPHA")
+    api("com.formdev:flatlaf:3.5.4")
 }
 
 tasks.test {
