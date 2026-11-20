@@ -5,10 +5,6 @@ plugins {
 group = "com.github.castawaymakesthings.lullaby"
 version = "unspecified"
 
-repositories {
-    mavenCentral()
-}
-
 dependencies {
     testImplementation(platform("org.junit:junit-bom:6.0.0"))
     testImplementation("org.junit.jupiter:junit-jupiter")
