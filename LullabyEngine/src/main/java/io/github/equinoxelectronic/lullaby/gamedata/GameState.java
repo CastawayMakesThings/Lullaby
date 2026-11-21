@@ -22,6 +22,7 @@ public class GameState implements Serializable {
     private HashMap<String, Object> vars = new HashMap<>();
     private HashMap<String, Stat> stats = new HashMap<>();
     private HashMap<String, Integer> sceneVisitCounts = new HashMap<>();
+    private HashMap<String, Integer> choiceSelectedCounts = new HashMap<>();
     private Inventory inventory = new Inventory();
     private Time gameTime = new Time(0);
     private String owner;
@@ -57,8 +58,20 @@ public class GameState implements Serializable {
         notifyStateChanged();
     }
 
+    public void addStat(Stat stat) {
+        if (stat != null && stat.getIdentifier() != null) {
+            stats.put(stat.getIdentifier(), stat);
+            notifyStateChanged();
+        }
+    }
+
     public Stat getStat(String statID) {
         return stats.get(statID);
+    }
+
+    public int getStatValue(String statID) {
+        Stat stat = stats.get(statID);
+        return stat != null ? stat.getValue() : 0;
     }
 
     public void setStatValue(String statID, int value) {
@@ -69,6 +82,18 @@ public class GameState implements Serializable {
         }
     }
 
+    public void modifyStat(String statID, int delta) {
+        Stat stat = stats.get(statID);
+        if (stat != null) {
+            stat.setValue(stat.getValue() + delta);
+            notifyStateChanged();
+        }
+    }
+
+    public boolean hasStat(String statID) {
+        return stats.containsKey(statID);
+    }
+
     public Time getGameTime() {
         return gameTime;
     }
@@ -76,6 +101,15 @@ public class GameState implements Serializable {
     public void setGameTime(Time gameTime) {
         this.gameTime = gameTime;
         notifyStateChanged();
+    }
+
+    public void advanceTime(long seconds) {
+        long current = gameTime != null ? gameTime.seconds() : 0;
+        setGameTime(new Time(current + seconds));
+    }
+
+    public void addTime(long seconds) {
+        advanceTime(seconds);
     }
 
 
@@ -161,8 +195,24 @@ public class GameState implements Serializable {
         notifyStateChanged();
     }
 
-    public void incrementCounter(String counterName) {
-        setCounter(counterName, getCounter(counterName) + 1);
+    public int incrementCounter(String counterName) {
+        return incrementCounter(counterName, 1);
+    }
+
+    public int incrementCounter(String counterName, int amount) {
+        int newVal = getCounter(counterName) + amount;
+        setCounter(counterName, newVal);
+        return newVal;
+    }
+
+    public int decrementCounter(String counterName) {
+        return decrementCounter(counterName, 1);
+    }
+
+    public int decrementCounter(String counterName, int amount) {
+        int newVal = getCounter(counterName) - amount;
+        setCounter(counterName, newVal);
+        return newVal;
     }
 
     public String getString(String stringName) {
@@ -196,6 +246,42 @@ public class GameState implements Serializable {
             return stats.get(varName).getValue();
         }
         return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getVar(String varName, Class<T> type) {
+        Object val = getVar(varName);
+        if (val == null) return null;
+        if (type.isInstance(val)) {
+            return (T) val;
+        }
+        if (type == String.class) {
+            return (T) val.toString();
+        }
+        if (type == Integer.class && val instanceof Number) {
+            return (T) Integer.valueOf(((Number) val).intValue());
+        }
+        if (type == Double.class && val instanceof Number) {
+            return (T) Double.valueOf(((Number) val).doubleValue());
+        }
+        if (type == Long.class && val instanceof Number) {
+            return (T) Long.valueOf(((Number) val).longValue());
+        }
+        if (type == Boolean.class && val instanceof String) {
+            return (T) Boolean.valueOf(Boolean.parseBoolean((String) val));
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T> T getVar(String varName, T defaultValue) {
+        Object val = getVar(varName);
+        if (val == null) return defaultValue;
+        try {
+            return (T) val;
+        } catch (ClassCastException e) {
+            return defaultValue;
+        }
     }
 
     public void setVar(String varName, Object value) {
@@ -249,6 +335,10 @@ public class GameState implements Serializable {
         return inventory != null && inventory.hasItem(classPointer, quantity);
     }
 
+    public int getItemQuantity(String classPointer) {
+        return inventory != null ? inventory.getItemQuantity(classPointer) : 0;
+    }
+
     public void giveItem(String classPointer, int quantity) {
         if (inventory != null) {
             inventory.addItem(classPointer, quantity);
@@ -258,6 +348,13 @@ public class GameState implements Serializable {
 
     public void giveItem(String classPointer) {
         giveItem(classPointer, 1);
+    }
+
+    public void giveItem(Item item) {
+        if (inventory != null && item != null) {
+            inventory.addItem(item);
+            notifyStateChanged();
+        }
     }
 
     public void removeItem(String classPointer, int quantity) {
@@ -271,8 +368,29 @@ public class GameState implements Serializable {
         removeItem(classPointer, 1);
     }
 
+    public void removeItem(Item item) {
+        if (inventory != null && item != null) {
+            inventory.removeItem(item);
+            notifyStateChanged();
+        }
+    }
+
     public int getSceneVisitCount(String sceneId) {
         return sceneVisitCounts.getOrDefault(sceneId, 0);
+    }
+
+    public int getChoiceSelectedCount(String choiceLabel) {
+        return choiceSelectedCounts.getOrDefault(choiceLabel, 0);
+    }
+
+    public void recordChoiceSelected(String choiceLabel) {
+        if (choiceLabel != null) {
+            choiceSelectedCounts.put(choiceLabel, getChoiceSelectedCount(choiceLabel) + 1);
+        }
+    }
+
+    public HashMap<String, Integer> getChoiceSelectedCounts() {
+        return choiceSelectedCounts;
     }
 
     private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
@@ -292,6 +410,7 @@ public class GameState implements Serializable {
         this.vars = other.vars != null ? new HashMap<>(other.vars) : new HashMap<>();
         this.stats = other.stats != null ? new HashMap<>(other.stats) : new HashMap<>();
         this.sceneVisitCounts = other.sceneVisitCounts != null ? new HashMap<>(other.sceneVisitCounts) : new HashMap<>();
+        this.choiceSelectedCounts = other.choiceSelectedCounts != null ? new HashMap<>(other.choiceSelectedCounts) : new HashMap<>();
         this.inventory = other.inventory;
         this.gameTime = other.gameTime;
         this.owner = other.owner;

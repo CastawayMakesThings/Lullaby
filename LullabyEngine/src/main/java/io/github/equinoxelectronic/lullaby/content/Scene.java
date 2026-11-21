@@ -27,6 +27,18 @@ public class Scene {
         this.id = id;
     }
 
+    public static Scene make(String id) {
+        return new Scene(id);
+    }
+
+    public static Scene create(String id) {
+        return new Scene(id);
+    }
+
+    public static Scene of(String id) {
+        return new Scene(id);
+    }
+
     //Set the title
     public Scene title(String title) {
         this.titleText = title;

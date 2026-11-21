@@ -3,28 +3,36 @@ package io.github.equinoxelectronic.lullaby.mechanics;
 public class TimeConstructor {
     private long timeInSeconds;
 
-    public Time construct(){
+    public Time construct() {
         return new Time(timeInSeconds);
     }
 
-    public TimeConstructor seconds(long timeInSeconds){
-        this.timeInSeconds = timeInSeconds;
+    public Time build() {
+        return construct();
+    }
+
+    public TimeConstructor seconds(long timeInSeconds) {
+        this.timeInSeconds += timeInSeconds;
         return this;
     }
 
-    public TimeConstructor minutes(long timeInSeconds){
-        this.timeInSeconds = timeInSeconds * 60;
+    public TimeConstructor minutes(long minutes) {
+        this.timeInSeconds += minutes * 60;
         return this;
     }
 
-    public TimeConstructor hours(long timeInSeconds){
-        this.timeInSeconds = timeInSeconds * 3600;
+    public TimeConstructor hours(long hours) {
+        this.timeInSeconds += hours * 3600;
         return this;
     }
 
-    public TimeConstructor days(long timeInSeconds){
-        this.timeInSeconds = timeInSeconds * 86400;
+    public TimeConstructor days(long days) {
+        this.timeInSeconds += days * 86400;
         return this;
     }
 
+    public TimeConstructor weeks(long weeks) {
+        this.timeInSeconds += weeks * 604800;
+        return this;
+    }
 }

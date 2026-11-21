@@ -42,8 +42,29 @@ public class Choice {
         return new Choice(dynamicLabel, targetSceneId);
     }
 
+    public static Choice of(String label, String targetSceneId) {
+        return new Choice(label, targetSceneId);
+    }
+
+    public static Choice of(Function<GameState, String> dynamicLabel, String targetSceneId) {
+        return new Choice(dynamicLabel, targetSceneId);
+    }
+
+    public static Choice create(String label, String targetSceneId) {
+        return new Choice(label, targetSceneId);
+    }
+
+    public static Choice create(Function<GameState, String> dynamicLabel, String targetSceneId) {
+        return new Choice(dynamicLabel, targetSceneId);
+    }
+
     // Set label text
     public Choice setLabel(String label) {
+        this.label = label;
+        return this;
+    }
+
+    public Choice label(String label) {
         this.label = label;
         return this;
     }
@@ -54,7 +75,17 @@ public class Choice {
         return this;
     }
 
+    public Choice dynamicLabel(Function<GameState, String> dynamicLabel) {
+        this.dynamicLabel = dynamicLabel;
+        return this;
+    }
+
     public Choice target(String targetSceneId) {
+        this.targetSceneId = targetSceneId;
+        return this;
+    }
+
+    public Choice targetSceneId(String targetSceneId) {
         this.targetSceneId = targetSceneId;
         return this;
     }
@@ -303,6 +334,14 @@ public class Choice {
         return onSelect(state -> state.setStatValue(statId, value));
     }
 
+    public Choice modifyStat(String statId, int delta) {
+        return onSelect(state -> state.modifyStat(statId, delta));
+    }
+
+    public Choice advanceTime(long seconds) {
+        return onSelect(state -> state.advanceTime(seconds));
+    }
+
     // Give item
     public Choice giveItem(String itemClassPointer) {
         return giveItem(itemClassPointer, 1);
@@ -312,8 +351,20 @@ public class Choice {
         return onSelect(state -> state.giveItem(itemClassPointer, quantity));
     }
 
+    public Choice givesItem(String itemClassPointer) {
+        return giveItem(itemClassPointer, 1);
+    }
+
+    public Choice givesItem(String itemClassPointer, int quantity) {
+        return giveItem(itemClassPointer, quantity);
+    }
+
     public Choice giveItem(Item item) {
         return onSelect(state -> state.getInventory().addItem(item));
+    }
+
+    public Choice givesItem(Item item) {
+        return giveItem(item);
     }
 
     // Requires item (only displays if item is in inventory)

@@ -11,8 +11,16 @@ public class Time implements Serializable {
         this.timeInSeconds = timeInSeconds;
     }
 
-    public static TimeConstructor construct(){
+    public static TimeConstructor construct() {
         return new TimeConstructor();
+    }
+
+    public static TimeConstructor builder() {
+        return new TimeConstructor();
+    }
+
+    public static Time of(long seconds) {
+        return new Time(seconds);
     }
 
     public long seconds() {

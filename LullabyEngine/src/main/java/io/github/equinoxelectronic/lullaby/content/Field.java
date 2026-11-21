@@ -61,14 +61,39 @@ public class Field {
         return new Field(placeholder, targetSceneId, boundVariableKey);
     }
 
+    public static Field of(String placeholder, String targetSceneId) {
+        return new Field(placeholder, targetSceneId);
+    }
+
+    public static Field of(String placeholder, String targetSceneId, String boundVariableKey) {
+        return new Field(placeholder, targetSceneId, boundVariableKey);
+    }
+
+    public static Field create(String placeholder, String targetSceneId) {
+        return new Field(placeholder, targetSceneId);
+    }
+
+    public static Field create(String placeholder, String targetSceneId, String boundVariableKey) {
+        return new Field(placeholder, targetSceneId, boundVariableKey);
+    }
+
     public Field placeholder(String placeholder) {
         this.placeholder = placeholder;
+        return this;
+    }
+
+    public Field target(String targetSceneId) {
+        this.targetSceneId = targetSceneId;
         return this;
     }
 
     public Field targetScene(String targetSceneId) {
         this.targetSceneId = targetSceneId;
         return this;
+    }
+
+    public Field bindTo(String boundVariableKey) {
+        return putAsVar(boundVariableKey);
     }
 
     // Run action when submitted

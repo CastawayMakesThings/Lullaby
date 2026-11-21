@@ -70,3 +70,28 @@ dependencies {
 ```
 
 > Replace `Tag` with the release version tag or commit hash (e.g., `v0.0.1-ALPHA` or `main-SNAPSHOT`).
+
+## Documentation
+
+For a comprehensive explanation of all builder and facade methods, see [BUILDERS.md](BUILDERS.md).
+
+### Quick Example
+
+```java
+LullabyGame game = Lullaby.create("My Adventure")
+        .author("Developer")
+        .startingScene("intro")
+        .windowSize(800, 600);
+
+game.scene("intro")
+        .title("Welcome")
+        .text("Your adventure begins here.")
+        .choice("Begin Journey", "forest");
+
+game.scene("forest")
+        .title("Forest")
+        .text("You step into a lush green forest.")
+        .choice("Explore further", "deep_forest");
+
+game.start();
+```
