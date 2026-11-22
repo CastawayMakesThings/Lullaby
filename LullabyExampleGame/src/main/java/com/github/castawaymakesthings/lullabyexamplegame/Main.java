@@ -1,41 +1,32 @@
 package com.github.castawaymakesthings.lullabyexamplegame;
 
 import io.github.equinoxelectronic.lullaby.LullabyGame;
-import io.github.equinoxelectronic.lullaby.content.Choice;
 
+/**
+ * Main entry point for the Lullaby Example Game: "Whispers of the Clockwork Manor".
+ * Demonstrates a feature-rich, modular narrative game powered by the Lullaby engine.
+ */
 public class Main {
 
+    public static LullabyGame createGame() {
+        LullabyGame game = new LullabyGame();
+
+        // 1. Setup metadata, window, stats, items, and initial time
+        GameSetup.configure(game);
+
+        // 2. Register modular scenes
+        IntroScenes.register(game);
+        CourtyardScenes.register(game);
+        LibraryScenes.register(game);
+        AlchemyLabScenes.register(game);
+        ClockTowerScenes.register(game);
+        EndingScenes.register(game);
+
+        return game;
+    }
+
     public static void main(String[] args) {
-        LullabyGame story = new LullabyGame();
-        story.game.gameData.setName("Example Game")
-                .setSaveFileVersion("v0.0.1")
-                .setAuthor("AnotherCastaway")
-                .setStartingSceneName("intro")
-                .setIconPath("")
-                .setShouldDisplayTime(false)
-                .setWindowSizeX(800)
-                .setWindowSizeY(600);
-
-        story.scene("intro")
-                .title("Welcome to a game made in Lullaby!")
-                .text("This is a simple example of a game made in Lullaby.")
-                .image("Lullaby.png")
-                .choice("End the game", "ending")
-                .choice(
-                        Choice.make("See more", "p2")
-                                .onSelect(s->System.out.println("You chose to see more in " + s.getCurrentSceneID()))
-
-                );
-
-        story.scene("p2")
-                .title("More")
-                .text("This is more text.")
-                .choice("End the game", "ending");
-
-        story.scene("ending")
-                .title("Ending")
-                .text("This is the ending of the game.");
-
-        story.start();
+        LullabyGame game = createGame();
+        game.start();
     }
 }

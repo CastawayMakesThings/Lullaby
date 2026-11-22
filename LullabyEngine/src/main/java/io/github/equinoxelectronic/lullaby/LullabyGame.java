@@ -20,7 +20,7 @@ import java.util.Map;
 
 public class LullabyGame {
     //Program identifiers
-    public static final String VERSION = "v0.0.3";
+    public static final String VERSION = "v0.1.0";
     public static final String NAME = "Lullaby";
 
     public JFrame window = null;
