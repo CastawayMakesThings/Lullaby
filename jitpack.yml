@@ -1,4 +1,6 @@
 jdk:
   - openjdk21
+env:
+  JITPACK: "true"
 install:
-  - ./gradlew :LullabyEngine:publishToMavenLocal
+  - ./gradlew :LullabyEngine:publishToMavenLocal -Pjitpack=true

@@ -9,4 +9,10 @@ dependencyResolutionManagement {
 }
 
 include("LullabyEngine")
-include("LullabyExampleGame")
+
+val isJitPack = System.getenv("JITPACK")?.equals("true", ignoreCase = true) == true ||
+    providers.gradleProperty("jitpack").orNull?.equals("true", ignoreCase = true) == true
+
+if (!isJitPack) {
+    include("LullabyExampleGame")
+}
