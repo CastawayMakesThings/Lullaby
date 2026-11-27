@@ -288,17 +288,17 @@ public class Scene {
 
     //Add a text block that only appears if a condition is met
     public Scene textIf(Predicate<GameState> condition, String text) {
-        Function<GameState, String> gen = state -> condition.test(state) ? text : "";
+        Function<GameState, String> gen = state -> (condition == null || condition.test(state)) ? text : "";
         this.textGenerators.add(gen);
-        this.elements.add(new SceneTextElement(gen));
+        this.elements.add(new SceneTextElement(condition, state -> text));
         return this;
     }
 
     //Add a text block that only appears if a condition is met that allows for dynamic text generation
     public Scene textIf(Predicate<GameState> condition, Function<GameState, String> textGenerator) {
-        Function<GameState, String> gen = state -> condition.test(state) ? textGenerator.apply(state) : "";
+        Function<GameState, String> gen = state -> (condition == null || condition.test(state)) ? (textGenerator != null ? textGenerator.apply(state) : "") : "";
         this.textGenerators.add(gen);
-        this.elements.add(new SceneTextElement(gen));
+        this.elements.add(new SceneTextElement(condition, textGenerator));
         return this;
     }
 
@@ -492,5 +492,58 @@ public class Scene {
     public Scene onEnter(Consumer<GameState> onEnter) {
         this.enterActions.add(onEnter);
         return this;
+    }
+
+    // --- Scoped Conditional Builder Methods ---
+
+    public Scene when(Predicate<GameState> condition, Consumer<SceneConditionScope> configurer) {
+        if (condition != null && configurer != null) {
+            configurer.accept(new SceneConditionScope(this, condition));
+        }
+        return this;
+    }
+
+    public Scene whenFlag(String flag, Consumer<SceneConditionScope> configurer) {
+        return when(state -> state != null && state.getFlag(flag), configurer);
+    }
+
+    public Scene whenFlagFalse(String flag, Consumer<SceneConditionScope> configurer) {
+        return when(state -> state != null && !state.getFlag(flag), configurer);
+    }
+
+    public Scene whenVarEquals(String varName, Object value, Consumer<SceneConditionScope> configurer) {
+        return when(state -> state != null && state.isVarEqual(varName, value), configurer);
+    }
+
+    public Scene whenVarNotEqual(String varName, Object value, Consumer<SceneConditionScope> configurer) {
+        return when(state -> state != null && !state.isVarEqual(varName, value), configurer);
+    }
+
+    public Scene whenHasItem(String itemClassPointer, Consumer<SceneConditionScope> configurer) {
+        return when(state -> state != null && state.hasItem(itemClassPointer), configurer);
+    }
+
+    public Scene whenHasItem(String itemClassPointer, int quantity, Consumer<SceneConditionScope> configurer) {
+        return when(state -> state != null && state.hasItem(itemClassPointer, quantity), configurer);
+    }
+
+    public Scene whenDoesntHaveItem(String itemClassPointer, Consumer<SceneConditionScope> configurer) {
+        return when(state -> state != null && !state.hasItem(itemClassPointer), configurer);
+    }
+
+    public Scene whenDoesntHaveItem(String itemClassPointer, int quantity, Consumer<SceneConditionScope> configurer) {
+        return when(state -> state != null && !state.hasItem(itemClassPointer, quantity), configurer);
+    }
+
+    public Scene whenStatGreaterThan(String statId, int threshold, Consumer<SceneConditionScope> configurer) {
+        return when(state -> state != null && state.getStatValue(statId) > threshold, configurer);
+    }
+
+    public Scene whenStatLessThan(String statId, int threshold, Consumer<SceneConditionScope> configurer) {
+        return when(state -> state != null && state.getStatValue(statId) < threshold, configurer);
+    }
+
+    public Scene whenStatEquals(String statId, int value, Consumer<SceneConditionScope> configurer) {
+        return when(state -> state != null && state.getStatValue(statId) == value, configurer);
     }
 }

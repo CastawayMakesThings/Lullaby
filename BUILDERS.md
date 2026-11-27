@@ -109,6 +109,14 @@ A concise reference guide explaining the builder and facade methods available in
 - `imageIfFirst(...)` / `imageIfIteration(...)`: Shows image based on scene visit count.
 - `imageIfHasItem(...)` / `imageIfDoesntHaveItem(...)`: Shows image based on inventory possession.
 
+### Scoped Conditional Content (`when`)
+- `when(Predicate<GameState>, Consumer<SceneConditionScope>)`: Scopes multiple scene elements (text, images, choices, fields) to be conditionally displayed under a single shared condition predicate.
+- `whenFlag(String, Consumer<SceneConditionScope>)` / `whenFlagFalse(...)`: Scoped elements displayed based on boolean flag.
+- `whenVarEquals(String, Object, Consumer<SceneConditionScope>)` / `whenVarNotEqual(...)`: Scoped elements based on variable equality.
+- `whenHasItem(String, ...)` / `whenDoesntHaveItem(...)`: Scoped elements based on item possession.
+- `whenStatGreaterThan(String, int, ...)` / `whenStatLessThan(...)` / `whenStatEquals(...)`: Scoped elements based on player stats.
+- Inside the `SceneConditionScope`, call `.text(...)`, `.image(...)`, `.choice(...)`, `.field(...)`, or nested `.when(...)` without repeating conditions.
+
 ---
 
 ## 3. Choice (Option & Action Builder)
